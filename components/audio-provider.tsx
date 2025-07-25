@@ -25,10 +25,11 @@ const defaultTrack: Track = { title: "Track1", src: "/track1.mp3" }
 export function AudioProvider({ children }: { children: React.ReactNode }) {
   const [volume, setVolume] = useState(0.3)
   const [currentTrack, setCurrentTrack] = useState<Track>(defaultTrack)
-  const [isPlaying, setIsPlaying] = useState(false)
+  const [isPlaying, setIsPlaying] = useState(true)
   const [konamiModeActive, setKonamiModeActive] = useState(false)
+  const [awaitingInteraction, setAwaitingInteraction] = useState(false)
 
-  const audioRef = useRef<HTMLAudioElement>()
+  const audioRef = useRef<HTMLAudioElement | null>(null)
   const lastUserSelectedTrack = useRef<Track>(defaultTrack)
 
   const tracks: Track[] = [
@@ -37,70 +38,72 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
     { title: "Track3", src: "/track3.mp3" },
   ]
 
-  // Runs once to initialize the audio player and handle autoplay
+  // Initialize audio element
   useEffect(() => {
-    const audio = new Audio()
-    audioRef.current = audio
-    audio.loop = true
+    audioRef.current = new Audio()
+    audioRef.current.loop = true
+    return () => {
+      audioRef.current?.pause()
+    }
+  }, [])
 
-    const onPlay = () => setIsPlaying(true)
+  // Sync audio state with component state
+  useEffect(() => {
+    const audio = audioRef.current
+    if (!audio) return
+
+    const onPlay = () => {
+      setIsPlaying(true)
+      setAwaitingInteraction(false)
+    }
     const onPause = () => setIsPlaying(false)
     audio.addEventListener("play", onPlay)
     audio.addEventListener("pause", onPause)
 
-    // Autoplay logic
-    const attemptAutoplay = () => {
+    // Set src and volume
+    const trackToPlay = konamiModeActive ? konamiTrack : currentTrack
+    if (!audio.src.endsWith(trackToPlay.src)) {
+      audio.src = trackToPlay.src
+    }
+    audio.volume = volume
+
+    // Handle playback
+    if (isPlaying) {
       audio.play().catch((error) => {
         if (error.name === "NotAllowedError") {
-          const startOnInteraction = () => {
-            audio.play().catch(console.error)
-            window.removeEventListener("click", startOnInteraction)
-            window.removeEventListener("keydown", startOnInteraction)
-          }
-          window.addEventListener("click", startOnInteraction)
-          window.addEventListener("keydown", startOnInteraction)
+          setIsPlaying(false) // Autoplay was blocked
+          setAwaitingInteraction(true)
         }
       })
+    } else {
+      audio.pause()
     }
 
-    // Set initial track and try to play
-    const trackToPlay = konamiModeActive ? konamiTrack : currentTrack
-    audio.src = trackToPlay.src
-    audio.volume = volume
-    attemptAutoplay()
-
     return () => {
-      audio.pause()
       audio.removeEventListener("play", onPlay)
       audio.removeEventListener("pause", onPause)
     }
-  }, []) // ENSURES THIS RUNS ONLY ONCE
+  }, [isPlaying, currentTrack, volume, konamiModeActive])
 
-  // Handles track changes
+  // Handle waiting for user interaction for autoplay
   useEffect(() => {
-    const trackToPlay = konamiModeActive ? konamiTrack : currentTrack
-    if (audioRef.current && !audioRef.current.src.endsWith(trackToPlay.src)) {
-      audioRef.current.src = trackToPlay.src
-      if (isPlaying) {
-        audioRef.current.play().catch(console.error)
+    if (awaitingInteraction) {
+      const startOnInteraction = () => {
+        setIsPlaying(true)
+      }
+
+      window.addEventListener("click", startOnInteraction)
+      window.addEventListener("keydown", startOnInteraction)
+
+      return () => {
+        window.removeEventListener("click", startOnInteraction)
+        window.removeEventListener("keydown", startOnInteraction)
       }
     }
-  }, [currentTrack, konamiModeActive])
-
-  // Handles volume changes
-  useEffect(() => {
-    if (audioRef.current) {
-      audioRef.current.volume = volume
-    }
-  }, [volume])
+  }, [awaitingInteraction])
 
   const toggleAudio = () => {
-    if (!audioRef.current) return
-    if (audioRef.current.paused) {
-      audioRef.current.play().catch(console.error)
-    } else {
-      audioRef.current.pause()
-    }
+    setIsPlaying((prev) => !prev)
   }
 
   const playTrack = (track: Track) => {
