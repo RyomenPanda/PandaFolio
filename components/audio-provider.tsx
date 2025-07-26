@@ -208,7 +208,7 @@ function AudioControls({
       <div className="flex items-center gap-1 mt-1">
         {/* minus */}
         <button
-          onClick={() => setVolume(Math.min(1, volume - 0.2))}
+          onClick={() => setVolume(Math.max(0, volume - 0.2))}
           className="text-cyan-400 hover:text-cyan-300 text-sm font-bold px-1"
         >
           -

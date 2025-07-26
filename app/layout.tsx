@@ -8,8 +8,8 @@ const pressStart = Press_Start_2P({ weight: "400", subsets: ["latin"], variable:
 
 export const metadata: Metadata = {
   title: 'Pandafolio',
-  description: 'Created with v0',
-  generator: 'v0.dev',
+  description: 'Ryomenpanda\'s Personal Portfolio',
+  generator: 'ryomenpanda',
 }
 
 export default function RootLayout({
