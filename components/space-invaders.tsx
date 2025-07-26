@@ -159,6 +159,8 @@ export function SpaceInvaders({
         >
           QUIT (ESC)
         </button>
+        <p className="text-xl md:text-1xl text-green-400">{"> Arrow Keys to Move"}</p>
+        <p className="text-xl md:text-1xl text-green-400">{"> Space to Shoot"}</p>
       </div>
     </div>
   )

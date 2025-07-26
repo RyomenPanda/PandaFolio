@@ -36,6 +36,9 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
     defaultTrack,
     { title: "Track2", src: "/track2.mp3" },
     { title: "Track3", src: "/track3.mp3" },
+    { title: "Track4", src: "/track4.mp3" },
+    { title: "Track5", src: "/track5.mp3" },
+    { title: "Track6", src: "/track6.mp3" },
   ]
 
   // Initialize audio element
