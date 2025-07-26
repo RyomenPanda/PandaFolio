@@ -90,7 +90,7 @@ export function HeroSection() {
       <div className="relative z-20 text-center" data-parallax="0.5">
         <PandaLogo className="mx-auto mb-8 animate-pulse" />
         <h1 className="text-6xl md:text-8xl font-bold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-600 animate-pulse">
-          SOUMIK CHOWDHURY
+          RYOMEN PANDA
         </h1>
         <p className="text-xl md:text-2xl mb-8 text-green-400">{"> Ready to explore my journey?"}</p>
         <button
