@@ -69,12 +69,20 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
 
     // Handle playback
     if (isPlaying) {
-      audio.play().catch((error) => {
-        if (error.name === "NotAllowedError") {
-          setIsPlaying(false) // Autoplay was blocked
-          setAwaitingInteraction(true)
-        }
-      })
+      const playTimeout = setTimeout(() => {
+        audio.play().catch((error) => {
+          if (error.name === "NotAllowedError") {
+            setIsPlaying(false) // Autoplay was blocked
+            setAwaitingInteraction(true)
+          }
+        })
+      }, 1000) // 1 second delay
+
+      return () => {
+        clearTimeout(playTimeout)
+        audio.removeEventListener("play", onPlay)
+        audio.removeEventListener("pause", onPause)
+      }
     } else {
       audio.pause()
     }
@@ -94,10 +102,12 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
 
       window.addEventListener("click", startOnInteraction)
       window.addEventListener("keydown", startOnInteraction)
+      window.addEventListener("scroll", startOnInteraction)
 
       return () => {
         window.removeEventListener("click", startOnInteraction)
         window.removeEventListener("keydown", startOnInteraction)
+        window.removeEventListener("scroll", startOnInteraction)
       }
     }
   }, [awaitingInteraction])
