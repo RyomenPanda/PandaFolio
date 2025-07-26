@@ -10,6 +10,9 @@ export const metadata: Metadata = {
   title: 'Pandafolio',
   description: 'Ryomenpanda\'s Personal Portfolio',
   generator: 'ryomenpanda',
+  icons: {
+    icon: '/panda.png',
+  },
 }
 
 export default function RootLayout({
